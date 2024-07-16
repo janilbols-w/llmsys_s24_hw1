@@ -65,7 +65,23 @@ def topological_sort(variable: Variable) -> Iterable[Variable]:
     # BEGIN ASSIGN1_1
     # TODO
     
-    raise NotImplementedError("Task Autodiff Not Implemented Yet")
+    sorted = []
+    visited = set()
+    def visit(var):
+        print()
+        if var.unique_id in visited:
+            return
+        if not var.is_leaf():
+            for input in var.history.inputs:
+                if not input.is_constant():
+                    visit(input)
+        # print("[adding]", var)
+        visited.add(var.unique_id)
+        sorted.insert(0, var)
+
+    visit(variable)
+    return sorted
+    # raise NotImplementedError("Task Autodiff Not Implemented Yet")
     # END ASSIGN1_1
 
 
@@ -82,7 +98,21 @@ def backpropagate(variable: Variable, deriv: Any) -> None:
     """
     # BEGIN ASSIGN1_1
     # TODO
-   
+    sorted = topological_sort(variable)
+
+    d_dict = dict()
+    d_dict[variable.unique_id] = deriv
+    for var in sorted:
+        d = d_dict[var.unique_id]
+        if var.is_leaf():
+            var.accumulate_derivative(d)
+        else:
+            for inp, d_in in var.chain_rule(d):
+                try:
+                    d_dict[inp.unique_id] += d_in
+                except:
+                    d_dict[inp.unique_id] = d_in
+    return None
     raise NotImplementedError("Task Autodiff Not Implemented Yet")
     # END ASSIGN1_1
 
